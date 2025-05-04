@@ -9,7 +9,7 @@
 
 The **Transformer Translation Visualizer** is an interactive web application that demonstrates how a Transformer neural network model translates text from Indonesian to English. This educational tool visualizes each step of the translation process, from tokenization to the final output, making it easier to understand the inner workings of the Transformer architecture.
 
-![Transformer Translation Visualizer](https://raw.githubusercontent.com/username/transformer-translation-visualizer/main/screenshots/app_screenshot.png)
+![Transformer Translation Visualizer](https://miro.medium.com/v2/resize:fit:1400/format:webp/1*5WxBw4op4IgXgA5W7c4JuA.png)
 
 ## ✨ Features
 
