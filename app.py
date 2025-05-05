@@ -24,17 +24,56 @@ st.markdown("""
 .token-box {display: inline-block; padding: 0.5rem; margin: 0.25rem; border: 1px solid #ddd; border-radius: 4px;}
 .token-box:hover {background-color: #f0f0f0;}
 .attention-map {margin: 1rem 0;}
-.step-container {margin: 1.5rem 0; padding: 1rem; border: 1px solid #eee; border-radius: 8px;}
-.step-title {font-weight: bold; margin-bottom: 0.5rem;}
+.step-container {margin: 1.5rem 0; padding: 1rem; border: 1px solid #eee; border-radius: 8px; background-color: #f9f9f9;}
+.step-title {font-weight: bold; margin-bottom: 0.5rem; color: #1f77b4;}
+.tooltip {position: relative; display: inline-block; border-bottom: 1px dotted #666; cursor: help;}
+.tooltip .tooltiptext {visibility: hidden; width: 250px; background-color: #555; color: #fff; text-align: center; border-radius: 6px; padding: 10px; position: absolute; z-index: 1; bottom: 125%; left: 50%; margin-left: -125px; opacity: 0; transition: opacity 0.3s;}
+.tooltip:hover .tooltiptext {visibility: visible; opacity: 1;}
+.process-flow {padding: 15px; margin: 20px 0; background-color: #f0f7ff; border-radius: 8px;}
+.highlight-box {background-color: #e6f3ff; padding: 10px; border-radius: 5px; margin: 10px 0;}
+.concept-card {border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin: 10px 0; background-color: white;}
+.concept-title {font-weight: bold; color: #2c3e50; margin-bottom: 8px;}
 </style>
 """, unsafe_allow_html=True)
 
 # Title and introduction
 st.title("Transformer Translation Visualizer")
+
+# Introduction with simplified explanation
 st.markdown("""
-This interactive app visualizes how a Transformer model translates text from Indonesian to English. 
-Explore each step of the translation process from tokenization to the final output.
+## 🔍 Apa itu Transformer?
+
+Transformer adalah jenis model AI yang sangat baik dalam memahami bahasa. Model ini digunakan untuk menerjemahkan teks dari satu bahasa ke bahasa lain.
+
+Aplikasi ini memvisualisasikan bagaimana model Transformer menerjemahkan teks dari Bahasa Indonesia ke Bahasa Inggris, dengan menampilkan setiap langkah prosesnya secara interaktif.
 """)
+
+# Add a process flow diagram
+st.markdown("""
+<div class='process-flow'>
+<h3>Proses Penerjemahan Transformer</h3>
+<ol>
+  <li><strong>Tokenisasi</strong> - Memecah kalimat menjadi kata-kata</li>
+  <li><strong>Konversi ke Indeks</strong> - Mengubah kata menjadi angka yang dapat diproses</li>
+  <li><strong>Embedding</strong> - Mengubah angka menjadi vektor padat</li>
+  <li><strong>Encoding Posisi</strong> - Menambahkan informasi urutan kata</li>
+  <li><strong>Encoder</strong> - Memproses teks input dengan mekanisme perhatian (attention)</li>
+  <li><strong>Decoder</strong> - Menghasilkan terjemahan satu kata pada satu waktu</li>
+  <li><strong>Output</strong> - Menampilkan hasil terjemahan lengkap</li>
+</ol>
+</div>
+""", unsafe_allow_html=True)
+
+# Add tooltip helper function
+st.markdown("""
+<div class='concept-card'>
+  <div class='concept-title'>Konsep Penting</div>
+  <p><span class='tooltip'>Attention<span class='tooltiptext'>Mekanisme yang memungkinkan model fokus pada bagian tertentu dari input saat menghasilkan output</span></span>: Bagaimana model "memperhatikan" kata-kata yang relevan</p>
+  <p><span class='tooltip'>Token<span class='tooltiptext'>Unit dasar teks, biasanya kata atau bagian kata</span></span>: Potongan teks kecil (biasanya kata)</p>
+  <p><span class='tooltip'>Embedding<span class='tooltiptext'>Representasi numerik dari kata yang menangkap makna semantiknya</span></span>: Representasi kata dalam bentuk angka</p>
+  <p><span class='tooltip'>Encoder-Decoder<span class='tooltiptext'>Arsitektur yang memproses input (encoder) dan menghasilkan output (decoder)</span></span>: Bagian yang memproses input dan menghasilkan output</p>
+</div>
+""", unsafe_allow_html=True)
 
 # Create a modified version of the translate_sentence function that exposes internal states
 def visualize_translation(model, src_text, src_field, trg_field, max_len=100):
@@ -42,8 +81,14 @@ def visualize_translation(model, src_text, src_field, trg_field, max_len=100):
     
     # Step 1: Tokenization
     tokens = src_text.lower().split()
-    st.subheader("1. Tokenization")
-    st.write("Input text is split into tokens:")
+    st.markdown("<div class='step-container'>", unsafe_allow_html=True)
+    st.subheader("1. Tokenisasi")
+    st.markdown("""
+    <div class='highlight-box'>
+    <strong>Apa itu Tokenisasi?</strong> Proses memecah kalimat menjadi kata-kata individual (token) agar dapat diproses oleh model.
+    </div>
+    """, unsafe_allow_html=True)
+    st.write("Teks input dipecah menjadi token (kata-kata):")
     token_cols = st.columns(min(len(tokens) + 2, 8))
     
     # Display tokens in a row
@@ -57,8 +102,19 @@ def visualize_translation(model, src_text, src_field, trg_field, max_len=100):
     with token_cols[(len(tokens)+1) % len(token_cols)]:
         st.markdown("<div class='token-box' style='background-color: #e6f3ff;'>&lt;eos&gt;</div>", unsafe_allow_html=True)
     
+    st.markdown("</div>", unsafe_allow_html=True)
+    
     # Step 2: Convert tokens to indices
-    st.subheader("2. Converting Tokens to Indices")
+    st.markdown("<div class='step-container'>", unsafe_allow_html=True)
+    st.subheader("2. Konversi Token ke Indeks")
+    st.markdown("""
+    <div class='highlight-box'>
+    <strong>Mengapa Konversi ke Indeks?</strong> Komputer tidak dapat memproses kata secara langsung, sehingga setiap kata diubah menjadi angka unik dari kamus vocabulary.
+    <br><br>
+    <span class='tooltip'>SOS<span class='tooltiptext'>Start of Sentence - Token khusus yang menandakan awal kalimat</span></span> dan 
+    <span class='tooltip'>EOS<span class='tooltiptext'>End of Sentence - Token khusus yang menandakan akhir kalimat</span></span> adalah token khusus yang ditambahkan.
+    </div>
+    """, unsafe_allow_html=True)
     src_indices = [src_field.vocab.stoi.get(token, src_field.vocab.stoi['<unk>']) for token in tokens]
     src_indices = [src_field.vocab.stoi['<sos>']] + src_indices + [src_field.vocab.stoi['<eos>']]
     
@@ -73,9 +129,18 @@ def visualize_translation(model, src_text, src_field, trg_field, max_len=100):
     src_tensor = torch.LongTensor(src_indices).unsqueeze(0).to(DEVICE)
     src_mask = model.make_src_mask(src_tensor)
     
+    st.markdown("</div>", unsafe_allow_html=True)
+    
     # Step 3: Embedding Lookup
+    st.markdown("<div class='step-container'>", unsafe_allow_html=True)
     st.subheader("3. Embedding Lookup")
-    st.write("Tokens are converted to dense vectors (embeddings):")
+    st.markdown("""
+    <div class='highlight-box'>
+    <strong>Apa itu Embedding?</strong> Proses mengubah indeks token menjadi vektor padat yang menangkap makna semantik kata.
+    Setiap kata direpresentasikan sebagai vektor dengan ratusan dimensi, yang memungkinkan model memahami hubungan antar kata.
+    </div>
+    """, unsafe_allow_html=True)
+    st.write("Token diubah menjadi vektor padat (embeddings):")
     
     # Get token embeddings
     with torch.no_grad():
@@ -90,9 +155,18 @@ def visualize_translation(model, src_text, src_field, trg_field, max_len=100):
     ax.set_yticklabels(['<sos>'] + tokens[:min(4, len(tokens))])
     st.pyplot(fig)
     
+    st.markdown("</div>", unsafe_allow_html=True)
+    
     # Step 4: Positional Encoding
-    st.subheader("4. Positional Encoding")
-    st.write("Position information is added to embeddings:")
+    st.markdown("<div class='step-container'>", unsafe_allow_html=True)
+    st.subheader("4. Encoding Posisi")
+    st.markdown("""
+    <div class='highlight-box'>
+    <strong>Mengapa Encoding Posisi Penting?</strong> Transformer perlu tahu urutan kata dalam kalimat. 
+    Encoding posisi menambahkan informasi tentang posisi setiap token dalam kalimat, sehingga model dapat memahami struktur kalimat.
+    </div>
+    """, unsafe_allow_html=True)
+    st.write("Informasi posisi ditambahkan ke embeddings:")
     
     # Get positional encodings
     with torch.no_grad():
@@ -106,8 +180,17 @@ def visualize_translation(model, src_text, src_field, trg_field, max_len=100):
     ax.set_yticklabels(range(min(5, len(src_indices))))
     st.pyplot(fig)
     
+    st.markdown("</div>", unsafe_allow_html=True)
+    
     # Step 5: Encoder Processing
-    st.subheader("5. Encoder Processing")
+    st.markdown("<div class='step-container'>", unsafe_allow_html=True)
+    st.subheader("5. Pemrosesan Encoder")
+    st.markdown("""
+    <div class='highlight-box'>
+    <strong>Apa yang Dilakukan Encoder?</strong> Encoder memproses semua token input secara bersamaan dan menghasilkan representasi kontekstual.
+    Setiap token diperbarui berdasarkan hubungannya dengan semua token lain menggunakan mekanisme <span class='tooltip'>Self-Attention<span class='tooltiptext'>Mekanisme yang memungkinkan setiap token untuk memperhatikan token lain dalam kalimat yang sama</span></span>.
+    </div>
+    """, unsafe_allow_html=True)
     
     # Process through encoder
     with torch.no_grad():
@@ -154,9 +237,19 @@ def visualize_translation(model, src_text, src_field, trg_field, max_len=100):
                 ax.set_yticklabels(['<sos>'] + tokens + ['<eos>'])
                 st.pyplot(fig)
     
+    st.markdown("</div>", unsafe_allow_html=True)
+    
     # Step 6: Decoder Processing (Autoregressive Generation)
-    st.subheader("6. Autoregressive Decoding")
-    st.write("The model generates the translation one token at a time:")
+    st.markdown("<div class='step-container'>", unsafe_allow_html=True)
+    st.subheader("6. Pemrosesan Decoder (Generasi Autoregressif)")
+    st.markdown("""
+    <div class='highlight-box'>
+    <strong>Bagaimana Decoder Bekerja?</strong> Decoder menghasilkan terjemahan satu token pada satu waktu secara berurutan.
+    Untuk setiap token baru, decoder memperhatikan semua token yang telah dihasilkan sebelumnya dan semua token input dari encoder.
+    Proses ini disebut <span class='tooltip'>Autoregressive<span class='tooltiptext'>Proses menghasilkan output berdasarkan output sebelumnya</span></span> karena setiap prediksi bergantung pada prediksi sebelumnya.
+    </div>
+    """, unsafe_allow_html=True)
+    st.write("Model menghasilkan terjemahan satu token pada satu waktu:")
     
     # Start with <sos> token
     trg_indices = [trg_field.vocab.stoi['<sos>']]
@@ -247,16 +340,33 @@ def visualize_translation(model, src_text, src_field, trg_field, max_len=100):
         if pred_token == trg_field.vocab.stoi['<eos>']:
             break
     
+    st.markdown("</div>", unsafe_allow_html=True)
+    
     # Step 7: Final Translation
-    st.subheader("7. Final Translation")
+    st.markdown("<div class='step-container'>", unsafe_allow_html=True)
+    st.subheader("7. Hasil Terjemahan Akhir")
+    st.markdown("""
+    <div class='highlight-box'>
+    <strong>Hasil Akhir:</strong> Setelah semua token dihasilkan (atau token EOS ditemukan), kita mendapatkan terjemahan lengkap.
+    </div>
+    """, unsafe_allow_html=True)
     final_translation = ' '.join([word for word in translations if word != '<eos>' and word != '<sos>'])
     st.markdown(f"<div style='padding: 1rem; background-color: #f0f9ff; border-radius: 8px;'>"
-                f"<strong>Input (Indonesian):</strong> {src_text}<br><br>"
-                f"<strong>Translation (English):</strong> {final_translation}"
+                f"<strong>Input (Bahasa Indonesia):</strong> {src_text}<br><br>"
+                f"<strong>Terjemahan (Bahasa Inggris):</strong> {final_translation}"
                 f"</div>", unsafe_allow_html=True)
     
+    st.markdown("</div>", unsafe_allow_html=True)
+    
     # Step 8: Attention Visualization Summary
-    st.subheader("8. Attention Visualization Summary")
+    st.markdown("<div class='step-container'>", unsafe_allow_html=True)
+    st.subheader("8. Visualisasi Attention")
+    st.markdown("""
+    <div class='highlight-box'>
+    <strong>Memahami Attention:</strong> Visualisasi ini menunjukkan bagaimana model memperhatikan kata-kata input saat menghasilkan setiap kata output.
+    Warna yang lebih terang menunjukkan perhatian yang lebih tinggi. Ini membantu kita memahami bagaimana model membuat keputusan terjemahan.
+    </div>
+    """, unsafe_allow_html=True)
     
     if attention_weights:
         # Create a comprehensive attention visualization
@@ -271,12 +381,14 @@ def visualize_translation(model, src_text, src_field, trg_field, max_len=100):
         
         # Create a heatmap
         sns.heatmap(combined_attention, cmap='viridis', ax=ax)
-        ax.set_xlabel('Input Tokens')
-        ax.set_ylabel('Output Tokens')
+        ax.set_xlabel('Token Input')
+        ax.set_ylabel('Token Output')
         ax.set_xticklabels(['<sos>'] + tokens + ['<eos>'], rotation=45)
         ax.set_yticklabels(translations, rotation=0)
-        ax.set_title('Attention Weights Throughout Translation')
+        ax.set_title('Bobot Attention Selama Penerjemahan')
         st.pyplot(fig)
+    
+    st.markdown("</div>", unsafe_allow_html=True)  # Close the last step container
     
     return final_translation
 
@@ -383,51 +495,80 @@ model = Transformer(
 # No need to add English words again as we've already done it above
 
 # Main app interface
-st.sidebar.header("Translation Settings")
+st.sidebar.header("Pengaturan Penerjemahan")
 
-# Input text area
-user_input = st.sidebar.text_area("Enter Indonesian text:", 
+# Input text area with more descriptive label
+st.sidebar.markdown("### Masukkan Teks Bahasa Indonesia")
+st.sidebar.markdown("Ketik atau tempel teks Bahasa Indonesia yang ingin diterjemahkan:")
+user_input = st.sidebar.text_area("", 
                                  value="restoran itu besar dan terima kasih", 
-                                 height=100)
+                                 height=100,
+                                 key="input_text")
 
-# Add a button to trigger translation
-if st.sidebar.button("Translate and Visualize"):
+# Add examples for users to try
+st.sidebar.markdown("### Contoh Kalimat")
+if st.sidebar.button("Contoh 1: Sapaan"):
+    st.session_state.input_text = "selamat pagi nama saya adalah andi"
+    st.experimental_rerun()
+    
+if st.sidebar.button("Contoh 2: Makanan"):
+    st.session_state.input_text = "saya ingin makan di restoran itu"
+    st.experimental_rerun()
+    
+if st.sidebar.button("Contoh 3: Perjalanan"):
+    st.session_state.input_text = "besok saya akan pergi ke kantor dengan teman"
+    st.experimental_rerun()
+
+# Add a button to trigger translation with more descriptive text
+if st.sidebar.button("✨ Terjemahkan dan Visualisasikan", use_container_width=True):
     if user_input.strip():
         # Perform the translation with visualization
         visualize_translation(model, user_input, src_field, eng_field)
     else:
-        st.warning("Please enter some text to translate.")
+        st.warning("Silakan masukkan teks untuk diterjemahkan.")
 
 # Add explanatory sections
-with st.sidebar.expander("About the Transformer Model"):
+with st.sidebar.expander("Tentang Model Transformer"):
     st.write("""
-    The Transformer is a neural network architecture that uses self-attention mechanisms 
-    to process sequential data. It was introduced in the paper 'Attention Is All You Need' 
-    and has become the foundation for many state-of-the-art NLP models.
+    Transformer adalah arsitektur jaringan saraf yang menggunakan mekanisme self-attention 
+    untuk memproses data sekuensial. Model ini diperkenalkan dalam paper 'Attention Is All You Need' 
+    dan telah menjadi dasar untuk banyak model NLP canggih saat ini.
     
-    Key components:
-    - **Encoder**: Processes the input sequence
-    - **Decoder**: Generates the output sequence
-    - **Multi-Head Attention**: Allows the model to focus on different parts of the input
-    - **Positional Encoding**: Adds information about token positions
+    Komponen utama:
+    - **Encoder**: Memproses urutan input
+    - **Decoder**: Menghasilkan urutan output
+    - **Multi-Head Attention**: Memungkinkan model fokus pada bagian berbeda dari input
+    - **Positional Encoding**: Menambahkan informasi tentang posisi token
     """)
 
-with st.sidebar.expander("How to Use This App"):
+with st.sidebar.expander("Cara Menggunakan Aplikasi Ini"):
     st.write("""
-    1. Enter Indonesian text in the text area
-    2. Click 'Translate and Visualize'
-    3. Explore each step of the translation process
-    4. Hover over visualizations for more details
-    5. Watch how the model generates each token step by step
+    1. Masukkan teks Bahasa Indonesia di area teks atau pilih contoh
+    2. Klik tombol '✨ Terjemahkan dan Visualisasikan'
+    3. Jelajahi setiap langkah proses penerjemahan
+    4. Arahkan kursor ke istilah bertitik untuk melihat penjelasan
+    5. Amati bagaimana model menghasilkan setiap token secara bertahap
     """)
 
 # Footer
 st.sidebar.markdown("---")
 st.sidebar.markdown("""
-<small>Created for educational purposes to visualize Transformer-based translation.</small>
+<small>Dibuat untuk tujuan pendidikan untuk memvisualisasikan penerjemahan berbasis Transformer.</small>
 """, unsafe_allow_html=True)
 
-# Display a message when the app first loads
+# Display a welcome message when the app first loads
 if not st.session_state.get('app_loaded', False):
-    st.info("👈 Enter Indonesian text in the sidebar and click 'Translate and Visualize' to start.")
+    st.markdown("""
+    <div class='concept-card'>
+        <div class='concept-title'>👋 Selamat Datang di Visualisasi Transformer!</div>
+        <p>Aplikasi ini membantu Anda memahami cara kerja model Transformer dalam menerjemahkan teks.</p>
+        <p>Untuk memulai:</p>
+        <ol>
+            <li>Masukkan teks Bahasa Indonesia di panel samping atau pilih salah satu contoh</li>
+            <li>Klik tombol "✨ Terjemahkan dan Visualisasikan"</li>
+            <li>Jelajahi setiap langkah proses penerjemahan</li>
+        </ol>
+        <p><strong>Tip:</strong> Arahkan kursor ke istilah yang bergaris bawah titik-titik untuk melihat penjelasan lebih detail!</p>
+    </div>
+    """, unsafe_allow_html=True)
     st.session_state['app_loaded'] = True
